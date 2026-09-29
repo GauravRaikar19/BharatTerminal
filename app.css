@@ -47,7 +47,8 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .ic2-v{font-size:1.35rem;font-weight:700;color:var(--t3)}.ic2-c{font-size:.65rem;font-weight:600}
 .ic2-bar{height:2px;background:rgba(0,255,136,0.08);border-radius:99px;overflow:hidden;margin-top:3px}
 .ic2-bf{height:100%;border-radius:99px;transition:width 1.2s}.ic2-bf.up{background:var(--green)}.ic2-bf.dn{background:var(--red)}
-#chart-area{display:grid;grid-template-columns:1fr 290px;gap:14px;align-items:start}
+#chart-area{display:grid;grid-template-columns:1fr 315px;gap:14px;align-items:start}
+#chart-left-col,#chart-right-col{display:flex;flex-direction:column;gap:14px;min-width:0}
 #chart-wrap{height:290px;padding:8px 14px 14px;position:relative}
 .tf-row{display:flex;gap:3px}
 .tf{padding:3px 9px;font-family:var(--mono);font-size:.55rem;border:1px solid var(--bd);border-radius:3px;background:transparent;color:var(--t2);cursor:pointer;transition:all .12s}
