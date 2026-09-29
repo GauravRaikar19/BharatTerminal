@@ -255,10 +255,59 @@ function fetchRealNews() {
 }
 
 // ------- IMPROVED SIGNAL (server-side: 1Y daily, trend filter, MACD crossover, ATR stops) -------
+function calcLocalSignal() {
+  calcIndicators();
+  var hist = S.history[S.sel] || [];
+  var closes = [];
+  for (var i = 0; i < hist.length; i++) {
+    if (hist[i] && !isNaN(hist[i].c)) closes.push(hist[i].c);
+  }
+  var rsiVal = closes.length >= 14 ? calcRSI(closes) : 50;
+  var macdVal = closes.length >= 26 ? calcMACD(closes) : 0;
+  var trend = macdVal >= 0 ? 'UP' : 'DOWN';
+  var sig = 'HOLD';
+  var conf = 52;
+  var reasons = [];
+
+  if (rsiVal < 35 && macdVal >= 0) {
+    sig = 'BUY';
+    conf = 65;
+    reasons.push('RSI in oversold rebound zone (' + rsiVal + ')');
+    reasons.push('MACD histogram turning positive');
+  } else if (rsiVal > 68 || macdVal < -0.8) {
+    sig = 'EXIT';
+    conf = 60;
+    reasons.push('RSI overbought or downward momentum weakening');
+  } else {
+    sig = 'HOLD';
+    conf = 50;
+    reasons.push('Technical indicators in neutral consolidation');
+  }
+  reasons.push('⚡ Local technical mode (Ensure start.bat or server.js is running for 1Y AI signals)');
+
+  renderImprovedSignal({
+    signal: sig,
+    confidence: conf,
+    trend: trend,
+    rsi: rsiVal,
+    reasons: reasons,
+    filters: []
+  });
+}
+
 function fetchImprovedSignal(sym) {
+  var box = G('sigbox');
+  var lbl = G('siglbl');
+  var ico = G('sigico');
+  var rs  = G('sigrs');
+  if (box) box.className = 'sig2 HOLD';
+  if (ico) ico.textContent = '🟡';
+  if (lbl) lbl.textContent = 'ANALYZING';
+  if (rs)  rs.textContent  = 'Evaluating daily market signals for ' + sym + '...';
+
   var xhr = new XMLHttpRequest();
   xhr.open('GET', API_BASE + '/api/signal?symbol=' + encodeURIComponent(sym), true);
-  xhr.timeout = 12000;
+  xhr.timeout = 10000;
   xhr.onload = function() {
     if (xhr.status === 200) {
       try {
@@ -269,10 +318,11 @@ function fetchImprovedSignal(sym) {
         }
       } catch(e) {}
     }
-    // Fallback to local calcIndicators if API fails
-    calcIndicators();
+    calcLocalSignal();
   };
-  xhr.onerror = xhr.ontimeout = function() { calcIndicators(); };
+  xhr.onerror = xhr.ontimeout = function() {
+    calcLocalSignal();
+  };
   xhr.send();
 }
 
@@ -390,9 +440,13 @@ function fetchBacktest(sym) {
       body.innerHTML = '<div style="color:var(--red);font-size:.6rem;padding:14px">⚠️ Failed to parse results</div>';
     }
   };
-  xhr.onerror = xhr.ontimeout = function() {
+  xhr.ontimeout = function() {
     if (btn) { btn.disabled = false; btn.textContent = '▶ Run Backtest'; }
-    body.innerHTML = '<div style="color:var(--red);font-size:.6rem;padding:14px">⚠️ Timeout — server may be busy</div>';
+    body.innerHTML = '<div style="color:var(--red);font-size:.6rem;padding:14px">⚠️ Yahoo Finance query timed out.<br><span style="color:var(--t2)">The market feed took too long to return 2-year daily candles. Please try again in a moment.</span></div>';
+  };
+  xhr.onerror = function() {
+    if (btn) { btn.disabled = false; btn.textContent = '▶ Run Backtest'; }
+    body.innerHTML = '<div style="color:var(--red);font-size:.6rem;padding:14px">⚠️ Backend server not reachable.<br><span style="color:var(--t2)">Please ensure <b style="color:var(--green)">start.bat</b> or <b style="color:var(--green)">node server.js</b> is running on port 3000 to enable 2-year backtesting.</span></div>';
   };
   xhr.send();
 }
