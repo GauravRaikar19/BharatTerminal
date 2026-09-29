@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>BharatTerminal - Indian Stock Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet"/>
+<script src="chart.umd.min.js"></script>
+<link rel="stylesheet" href="app.css"/>
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <div id="logo">BHARAT<span>TERMINAL</span></div>
+    <div id="ticker-tape"><div id="ticker-inner"></div></div>
+    <div id="topbar-right">
+      <div id="mkt-status"><div id="sdot"></div><span id="stxt">CHECKING...</span></div>
+      <div id="exch-badge" title="All prices are NSE prices via Yahoo Finance. BSE prices differ slightly.">NSE</div>
+      <div id="clk">--:--:-- IST</div>
+    </div>
+  </header>
+  <nav id="sidebar">
+    <div class="sl">Navigation</div>
+    <button class="sb active" id="nav-dashboard" onclick="goTab('dashboard')"><span>■</span> Dashboard</button>
+    <button class="sb" id="nav-portfolio" onclick="goTab('portfolio')"><span>💼</span> Portfolio</button>
+    <button class="sb" id="nav-news" onclick="goTab('news')"><span>📰</span> Market News</button>
+    <div class="sl" style="margin-top:8px">Watchlist</div>
+    <div id="wl"></div>
+  </nav>
+  <main id="main">
+    <!-- DASHBOARD -->
+    <div class="tab on" id="tab-dashboard">
+      <div id="idx-row">
+        <div class="ic2"><div class="ic2-l">NIFTY 50</div><div class="ic2-v" id="nv">--</div><div class="ic2-c" id="nc">--</div><div class="ic2-bar"><div class="ic2-bf" id="nb" style="width:50%"></div></div></div>
+        <div class="ic2"><div class="ic2-l">SENSEX</div><div class="ic2-v" id="sv">--</div><div class="ic2-c" id="sc">--</div><div class="ic2-bar"><div class="ic2-bf" id="sb2" style="width:50%"></div></div></div>
+        <div class="ic2"><div class="ic2-l">BANK NIFTY</div><div class="ic2-v" id="bv">--</div><div class="ic2-c" id="bc">--</div><div class="ic2-bar"><div class="ic2-bf" id="bb2" style="width:50%"></div></div></div>
+      </div>
+      <div id="chart-area">
+        <div class="card">
+          <div class="ch">
+            <div class="ct" id="ctitle">RELIANCE.NS — Chart</div>
+            <div class="tf-row">
+              <button class="tf on" id="tf-1d" onclick="setTF('1d')">1D</button>
+              <button class="tf" id="tf-5d" onclick="setTF('5d')">5D</button>
+              <button class="tf" id="tf-1mo" onclick="setTF('1mo')">1M</button>
+              <button class="tf" id="tf-3mo" onclick="setTF('3mo')">3M</button>
+              <button class="tf" id="tf-1y" onclick="setTF('1y')">1Y</button>
+            </div>
+          </div>
+          <div id="chart-wrap"><canvas id="pc"></canvas></div>
+        </div>
+        <div class="card" id="si">
+          <div class="si-hd"><div class="si-sym" id="sisym">RELIANCE</div><div class="si-nm" id="sinm">Reliance Industries</div><span class="exch-tag" title="Data from NSE via Yahoo Finance">NSE</span></div>
+          <div class="si-pr" id="sipr">--</div>
+          <div class="si-chg"><span class="si-c" id="sich">--</span><span class="si-pc" id="sipc">(--)</span></div>
+          <div class="sg">
+            <div class="sg-c"><div class="sg-k">Open</div><div class="sg-v" id="sto">--</div></div>
+            <div class="sg-c"><div class="sg-k">High</div><div class="sg-v" id="sth">--</div></div>
+            <div class="sg-c"><div class="sg-k">Low</div><div class="sg-v" id="stl">--</div></div>
+            <div class="sg-c"><div class="sg-k">Prev Close</div><div class="sg-v" id="stp">--</div></div>
+            <div class="sg-c"><div class="sg-k">Volume</div><div class="sg-v" id="stv">--</div></div>
+            <div class="sg-c"><div class="sg-k">Mkt Cap</div><div class="sg-v" id="stm">--</div></div>
+            <div class="sg-c"><div class="sg-k">52W High</div><div class="sg-v" id="st52h">--</div></div>
+            <div class="sg-c"><div class="sg-k">52W Low</div><div class="sg-v" id="st52l">--</div></div>
+          </div>
+          <!-- Improved Signal Box -->
+          <div class="sig2" id="sigbox">
+            <div class="sig2-top">
+              <div>
+                <div class="sig2-ico" id="sigico">🟡</div>
+                <div class="sig2-lbl" id="siglbl">ANALYZING</div>
+              </div>
+              <div class="sig2-meta">
+                <div class="sig2-row"><span class="sig2-k">Confidence</span><span class="sig2-cf" id="sigcf">--%</span></div>
+                <div class="sig2-row"><span class="sig2-k">Trend</span><span class="sig2-trend" id="sigtrend">--</span></div>
+                <div class="sig2-row"><span class="sig2-k">RSI</span><span id="sigrsi">--</span></div>
+                <div class="sig2-row"><span class="sig2-k">R:R</span><span style="color:var(--cyan)">2:1</span></div>
+              </div>
+            </div>
+            <div class="sig2-levels" id="siglevels" style="display:none">
+              <div class="sig2-lv"><span class="sig2-k">Stop Loss</span><span class="sig2-sl" id="sigsl">--</span></div>
+              <div class="sig2-lv"><span class="sig2-k">Target</span><span class="sig2-tgt" id="sigtgt">--</span></div>
+            </div>
+            <!-- Extra Real-World Filters Checklist -->
+            <div class="sig2-filters-box" id="sigfiltersbox" style="display:none">
+              <div class="sig2-filters-hdr">
+                <span style="font-weight:700;letter-spacing:.05em">🛡️ REAL-WORLD FILTERS</span>
+                <span class="sig2-filters-count" id="sigfilterscount">--/5 PASSED</span>
+              </div>
+              <div class="sig2-filters-list" id="sigfilterslist"></div>
+            </div>
+            <div class="sig2-reasons" id="sigrs">Loading improved signal from 1Y daily data...</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">Technical Indicators</div><div style="font-size:.52rem;color:var(--t2)">Based on 1Y Daily Data</div></div>
+        <div class="cb"><div class="ind-row">
+          <div class="ind"><div class="ind-n">RSI (14)</div><div class="ind-v" id="irsi">--</div><div class="ind-s" id="irsis">--</div><div class="ind-bar"><div class="ind-bf" id="irsib" style="width:50%"></div></div></div>
+          <div class="ind"><div class="ind-n">MACD</div><div class="ind-v" id="imacd">--</div><div class="ind-s" id="imacdis">--</div><div class="ind-bar"><div class="ind-bf" id="imacdb" style="width:50%"></div></div></div>
+          <div class="ind"><div class="ind-n">Bollinger %B</div><div class="ind-v" id="ibb">--</div><div class="ind-s" id="ibbis">--</div><div class="ind-bar"><div class="ind-bf" id="ibbb" style="width:50%"></div></div></div>
+        </div></div>
+      </div>
+      <!-- BACKTEST PANEL -->
+      <div class="card" id="bt-card">
+        <div class="ch">
+          <div class="ct">📊 Signal Backtest — 2 Year Historical</div>
+          <button class="tb" id="bt-btn" onclick="fetchBacktest(S.sel)" style="font-size:.6rem;padding:4px 12px">▶ Run Backtest</button>
+        </div>
+        <div id="bt-body" class="cb">
+          <div style="font-size:.6rem;color:var(--t2);text-align:center;padding:18px">
+            Click <b style="color:var(--green)">▶ Run Backtest</b> to see historical win rate with all 4 extra filters applied (NIFTY 200-EMA Regime + Volume Surge + Kite Long-Only + 25-Day Profit-Lock).
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">Top Movers — NSE</div></div>
+        <div class="cb"><div class="mv-grid">
+          <div><div class="mv-lbl g">▲ TOP GAINERS</div><table class="mv-tbl"><thead><tr><th>Symbol</th><th>Price</th><th>Change</th></tr></thead><tbody id="gainers"></tbody></table></div>
+          <div><div class="mv-lbl r">▼ TOP LOSERS</div><table class="mv-tbl"><thead><tr><th>Symbol</th><th>Price</th><th>Change</th></tr></thead><tbody id="losers"></tbody></table></div>
+        </div></div>
+      </div>
+    </div>
+    <!-- PORTFOLIO -->
+    <div class="tab" id="tab-portfolio">
+      <div class="card">
+        <div class="ch">
+          <div class="ct">My Portfolio</div>
+          <div style="display:flex;gap:8px">
+            <button class="tb" style="padding:4px 10px;font-size:0.65rem;background:#131d2e;border:1px solid #1e3a5f;color:#60a5fa" onclick="exportPF()" title="Download a JSON backup of your portfolio">📥 Backup</button>
+            <button class="tb" style="padding:4px 10px;font-size:0.65rem;background:#131d2e;border:1px solid #1e3a5f;color:#60a5fa" onclick="importPF()" title="Import portfolio from JSON file">📤 Import</button>
+          </div>
+        </div>
+        <div class="pf-sum">
+          <div class="pf-si"><div class="pf-sl">Invested</div><div class="pf-sv" id="pfinv">&#8377;0</div></div>
+          <div class="pf-si"><div class="pf-sl">Current</div><div class="pf-sv" id="pfcur">&#8377;0</div></div>
+          <div class="pf-si"><div class="pf-sl">P&amp;L</div><div class="pf-sv" id="pfpnl">&#8377;0</div></div>
+          <div class="pf-si"><div class="pf-sl">Return</div><div class="pf-sv" id="pfret">0.00%</div></div>
+        </div>
+        <div class="add-row">
+          <input class="ti2" id="pfsym" list="stocks-datalist" placeholder="Symbol (e.g. RELIANCE)" style="max-width:155px" oninput="onPfSymChange()"/>
+          <datalist id="stocks-datalist"></datalist>
+          <input class="ti2" id="pfqty" type="number" placeholder="Qty" style="max-width:72px" min="1"/>
+          <input class="ti2" id="pfbuy" type="number" step="0.05" placeholder="Buy Price" style="max-width:115px"/>
+          <button class="tb" id="pf-use-cmp-btn" type="button" onclick="useCmpPrice()" style="display:none;padding:5px 9px;font-size:0.6rem;background:#13261f;border:1px solid #165e38;color:#00ff88;cursor:pointer" title="Auto-fill with Current Market Price">⚡ Use CMP</button>
+          <span id="pf-cmp-hint" style="font-size:0.65rem;color:var(--t2);align-self:center"></span>
+          <button class="tb" onclick="addHolding()">+ ADD</button>
+        </div>
+        <table class="pf-tbl">
+          <thead><tr><th>Symbol</th><th>Qty</th><th>Buy</th><th>CMP</th><th>Invested</th><th>Current</th><th>P&amp;L</th><th>Return</th><th></th></tr></thead>
+          <tbody id="pfbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- NEWS -->
+    <div class="tab" id="tab-news">
+      <div style="display:grid;grid-template-columns:1fr 270px;gap:14px">
+        <div class="card"><div class="ch"><div class="ct">Market News &amp; Sentiment</div></div><div id="newsl"></div></div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="card"><div class="ch"><div class="ct">Fear &amp; Greed Index</div></div><div class="fg-m"><canvas id="fgc" width="190" height="95"></canvas><div class="fg-v" id="fgv">--</div><div class="fg-l" id="fgl">--</div></div></div>
+          <div class="card"><div class="ch"><div class="ct">Market Breadth</div></div><div class="cb" id="brb"></div></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
